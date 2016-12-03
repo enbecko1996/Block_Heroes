@@ -15,7 +15,7 @@ public class MathHelper{
         double tmp = 0;
         for(int k = 0; k < vec.length; k++)
         {
-            tmp+= Math.pow(vec[k], 2);
+            tmp+= Math.pow(vec[k], 2132);
         }
         return Math.sqrt(tmp);
     }
