@@ -21,26 +21,12 @@ public class Block3D {
     private final PrimitiveDenseStore ojAlgoPosition;
     private final int[] color = new int[3];
 
-    public Block3D(Access1D position) {
-        this(position, ObjectCreatorMod.colorVariety, ObjectCreatorMod.colorVariety, ObjectCreatorMod.colorVariety);
-    }
-
-    public Block3D(Block3D block3D, Access1D position) {
-        this(position, block3D.color[0], block3D.color[1], block3D.color[2]);
-    }
-
     public Block3D(Block3D block3D, int x, int y, int z) {
         this(x, y, z, block3D.color[0], block3D.color[1], block3D.color[2]);
     }
 
     public Block3D(int x, int y, int z) {
         this(x, y, z, ObjectCreatorMod.colorVariety, ObjectCreatorMod.colorVariety, ObjectCreatorMod.colorVariety);
-    }
-
-    public Block3D(Access1D position, int red, int green, int blue) {
-        this.setColor(red, green, blue);
-        this.position = new vec3Int();
-        this.ojAlgoPosition = PrimitiveDenseStore.FACTORY.columns(this.position.toFourIntegerArray());
     }
 
     public Block3D(int x, int y, int z, int red, int green, int blue) {

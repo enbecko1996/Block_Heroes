@@ -2,6 +2,7 @@ package com.enbecko.objectcreator.restart;
 
 import com.enbecko.objectcreator.core.vec3;
 import net.minecraft.client.renderer.Tessellator;
+import org.jetbrains.annotations.Contract;
 import org.ojalgo.access.ColumnView;
 import org.ojalgo.matrix.PrimitiveMatrix;
 import org.ojalgo.matrix.store.MatrixStore;
@@ -32,6 +33,7 @@ public class Bone implements IVectorSpace {
     private PrimitiveMatrix transform = PrimitiveMatrix.FACTORY.makeEye(4, 4);
     private final vec3.Float rotation = new vec3.Float();
     double[] transformAsArray = new double[(int) this.transform.countColumns() * (int) this.transform.countRows()];
+    double[] inverseTransformAsArray = new double[(int) this.transform.countColumns() * (int) this.transform.countRows()];
     private PrimitiveMatrix inverseTransform = PrimitiveMatrix.FACTORY.makeEye(4, 4);
 
     public Bone(int size) {
@@ -57,6 +59,8 @@ public class Bone implements IVectorSpace {
     public CreatorBlockRayTraceResult getRayTraceResult(double distance, RayTrace3D rayTrace3D) {
         PrimitiveDenseStore on = rayTrace3D.getOnPoint();
         PrimitiveDenseStore ve = rayTrace3D.getVec1();
+        this.transform = this.arrayToMatrix(this.transformAsArray);
+        this.inverseTransform = this.arrayToMatrix(this.inverseTransformAsArray);
         System.out.println(this.transform);
         System.out.println(this.inverseTransform);
         System.out.println("before: "+on+" "+ve);
@@ -72,13 +76,14 @@ public class Bone implements IVectorSpace {
     }
 
     public void rotate(float angle, float x, float y, float z) {
-        this.fillArrayWithTransform();
+        this.fillArrayWithTransform(transform, transformAsArray);
         rotation.update(x, y, z);
         rotation.normalize();
         if (!Float.isNaN(rotation.x) && !Float.isNaN(rotation.y) && !Float.isNaN(rotation.z) && !Float.isInfinite(rotation.x) && !Float.isInfinite(rotation.y) && !Float.isInfinite(rotation.z)) {
             Matrix.rotateM(this.transformAsArray, 0, angle, x, y, z);
+            Matrix.invertM(this.inverseTransformAsArray, 0, this.transformAsArray, 0);
             // Matrix.rotateM(this.inverseTransformAsArray, 0, - angle, x, y, z);
-            this.transform = PrimitiveMatrix.FACTORY.columns(new double[]{this.transformAsArray[0], this.transformAsArray[1], this.transformAsArray[2], this.transformAsArray[3]},
+            /**this.transform = PrimitiveMatrix.FACTORY.columns(new double[]{this.transformAsArray[0], this.transformAsArray[1], this.transformAsArray[2], this.transformAsArray[3]},
                     new double[]{this.transformAsArray[4], this.transformAsArray[5], this.transformAsArray[6], this.transformAsArray[7]},
                     new double[]{this.transformAsArray[8], this.transformAsArray[9], this.transformAsArray[10], this.transformAsArray[11]},
                     new double[]{this.transformAsArray[12], this.transformAsArray[13], this.transformAsArray[14], this.transformAsArray[15]});
@@ -92,10 +97,11 @@ public class Bone implements IVectorSpace {
     }
 
     public void scale(float x, float y, float z) {
-        this.fillArrayWithTransform();
+        this.fillArrayWithTransform(transform, transformAsArray);
         Matrix.scaleM(this.transformAsArray, 0, x, y, z);
+        Matrix.invertM(this.inverseTransformAsArray, 0, this.transformAsArray, 0);
         // Matrix.rotateM(this.inverseTransformAsArray, 0, - angle, x, y, z);
-        this.transform =  PrimitiveMatrix.FACTORY.columns(new double[] {this.transformAsArray[0], this.transformAsArray[1], this.transformAsArray[2], this.transformAsArray[3]},
+        /**this.transform =  PrimitiveMatrix.FACTORY.columns(new double[] {this.transformAsArray[0], this.transformAsArray[1], this.transformAsArray[2], this.transformAsArray[3]},
                 new double[] {this.transformAsArray[4], this.transformAsArray[5], this.transformAsArray[6], this.transformAsArray[7]},
                 new double[] {this.transformAsArray[8], this.transformAsArray[9], this.transformAsArray[10], this.transformAsArray[11]},
                 new double[] {this.transformAsArray[12], this.transformAsArray[13], this.transformAsArray[14], this.transformAsArray[15]});
@@ -107,14 +113,22 @@ public class Bone implements IVectorSpace {
          */
     }
 
-    private void fillArrayWithTransform() {
-        Iterable<ColumnView<Number>> columns = this.transform.columns();
+    @Contract(pure = true)
+    public PrimitiveMatrix arrayToMatrix(double[] array) {
+        return PrimitiveMatrix.FACTORY.columns(new double[]{array[0], array[1], array[2], array[3]},
+                new double[]{array[4], array[5], array[6], array[7]},
+                new double[]{array[8], array[9], array[10], array[11]},
+                new double[]{array[12], array[13], array[14], array[15]});
+    }
+
+    private void fillArrayWithTransform(PrimitiveMatrix matrix, double[] array) {
+        Iterable<ColumnView<Number>> columns = matrix.columns();
         int it = 0;
         for (ColumnView<Number> columnView : columns) {
             final long leng = columnView.count();
             for (int k = 0; k < leng; k++) {
                 double nm = (Double) columnView.get(k);
-                transformAsArray[it * 4 + k] = (float) nm;
+                array[it * 4 + k] = (float) nm;
             }
             it++;
         }
