@@ -20,8 +20,6 @@ import javax.annotation.Nonnull;
  */
 public class TENewBase extends TileEntity implements ITickable, IMouseEventListener, IKeyListener {
     private final vec3.Double lookVec = new vec3.Double(), eyePos = new vec3.Double();
-    private final PrimitiveDenseStore look = PrimitiveDenseStore.FACTORY.makeZero(3, 1), eye = PrimitiveDenseStore.FACTORY.makeZero(3, 1);
-    private final Array1D lookA = Array1D.PRIMITIVE.makeZero(3), eyeA = Array1D.PRIMITIVE.makeZero(3);
     public TEBaseCreatorBlock.CreatorBlockRayTraceResult rayTraceResult;
     private final BlockSetModes BLOCKSETMODES;
     @Nonnull
@@ -49,7 +47,7 @@ public class TENewBase extends TileEntity implements ITickable, IMouseEventListe
     }
 
     public TENewBase() {
-        this.bone = new Bone(100);
+        this.bone = new Bone(100, null);
         this.BLOCKSETMODES = new BlockSetModes();
         this.theBlockSetMode = BLOCKSETMODES.getSetMode(BlockSetModes.STRAIGHT_LINE);
     }
@@ -64,16 +62,7 @@ public class TENewBase extends TileEntity implements ITickable, IMouseEventListe
         if(event.getButton() == -1) {
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
             Vec3d lookVec1 = player.getLook(0);
-            lookA.set(0, lookVec1.xCoord);
-            lookA.set(1, lookVec1.yCoord);
-            lookA.set(2, lookVec1.zCoord);
-            look.fillMatching(lookA);
-            Vec3d eyePos1 = player.getPositionEyes(0);
-            eyeA.set(0, eyePos1.xCoord);
-            eyeA.set(1, eyePos1.yCoord);
-            eyeA.set(2, eyePos1.zCoord);
-            eye.fillMatching(eyeA);
-            RayTrace3D rayTrace3D = new RayTrace3D(eye, look, true);
+            RayTrace3D rayTrace3D = new RayTrace3D(eyePos, lookVec, true);
             this.rayTraceResult = this.bone.getRayTraceResult(100, rayTrace3D);
 
             System.out.println(eyePos+" "+lookVec+" "+this.rayTraceResult);

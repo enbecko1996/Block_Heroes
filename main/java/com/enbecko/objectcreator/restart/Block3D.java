@@ -3,14 +3,6 @@ package com.enbecko.objectcreator.restart;
 import com.enbecko.objectcreator.ObjectCreatorMod;
 import com.enbecko.objectcreator.core.vec3;
 import com.enbecko.objectcreator.core.vec3Int;
-import com.google.common.primitives.UnsignedBytes;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11;
-import org.ojalgo.access.Access1D;
-import org.ojalgo.matrix.store.MatrixStore;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 /**
  * Created by Niclas on 19.11.2016.
@@ -18,7 +10,6 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 public class Block3D {
 
     private final vec3Int position;
-    private final PrimitiveDenseStore ojAlgoPosition;
     private final int[] color = new int[3];
 
     public Block3D(Block3D block3D, int x, int y, int z) {
@@ -32,7 +23,6 @@ public class Block3D {
     public Block3D(int x, int y, int z, int red, int green, int blue) {
         this.setColor(red, green, blue);
         this.position = new vec3Int(x, y, z);
-        this.ojAlgoPosition = PrimitiveDenseStore.FACTORY.columns(this.position.toFourIntegerArray());
     }
 
     public void setRed(int red) {
@@ -86,12 +76,8 @@ public class Block3D {
 
     public void fillFaces(Face3D ... face3Ds) {
         for (Face3D face3D : face3Ds) {
-            face3D.updateOnPoint(this.ojAlgoPosition.copy());
+            face3D.updateOnPoint(this.position);
         }
-    }
-
-    public PrimitiveDenseStore getOjAlgoPosition() {
-        return this.ojAlgoPosition.copy();
     }
 
     public vec3Int getPosition() {

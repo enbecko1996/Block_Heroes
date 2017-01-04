@@ -3,6 +3,7 @@ package com.enbecko.objectcreator.restart;
 import com.enbecko.objectcreator.core.vec3;
 import net.minecraft.client.renderer.Tessellator;
 import org.jetbrains.annotations.Contract;
+import org.ojalgo.access.Access1D;
 import org.ojalgo.access.ColumnView;
 import org.ojalgo.matrix.PrimitiveMatrix;
 import org.ojalgo.matrix.store.MatrixStore;
@@ -31,14 +32,17 @@ public class Bone implements IVectorSpace {
     private BoneRenderer boneRenderer;
     private final List<BlockRenderer> blockRenderers = new ArrayList<BlockRenderer>();
     private PrimitiveMatrix transform = PrimitiveMatrix.FACTORY.makeEye(4, 4);
+    private PrimitiveMatrix inverseTransform = PrimitiveMatrix.FACTORY.makeEye(4, 4);
+    private final MatrixStore<Double> globalCoords;
     private final vec3.Float rotation = new vec3.Float();
     double[] transformAsArray = new double[(int) this.transform.countColumns() * (int) this.transform.countRows()];
     double[] inverseTransformAsArray = new double[(int) this.transform.countColumns() * (int) this.transform.countRows()];
-    private PrimitiveMatrix inverseTransform = PrimitiveMatrix.FACTORY.makeEye(4, 4);
 
-    public Bone(int size) {
+
+    public Bone(int size, @Nonnull Access1D<Double> globalCoords) {
         this.size = size;
         this.blocks = new Block3D[size][size][size];
+        this.globalCoords = PrimitiveDenseStore.FACTORY.columns(globalCoords);
         this.setBlockAt(1, 1, 1, new Block3D(1, 1, 1, 0, 255, 255));
         this.setBlockAt(1, 2, 1, new Block3D(1, 1, 1));
         this.setBlockAt(1, 1, 2, new Block3D(1, 1, 1));
@@ -59,11 +63,9 @@ public class Bone implements IVectorSpace {
     public CreatorBlockRayTraceResult getRayTraceResult(double distance, RayTrace3D rayTrace3D) {
         PrimitiveDenseStore on = rayTrace3D.getOnPoint();
         PrimitiveDenseStore ve = rayTrace3D.getVec1();
+        on = (PrimitiveDenseStore) on.subtract(this.globalCoords);
         this.transform = this.arrayToMatrix(this.transformAsArray);
         this.inverseTransform = this.arrayToMatrix(this.inverseTransformAsArray);
-        System.out.println(this.transform);
-        System.out.println(this.inverseTransform);
-        System.out.println("before: "+on+" "+ve);
         MatrixStore<Double> store = this.inverseTransform.toPrimitiveStore();
         MatrixStore<Double> onP = store.multiply(on);
         MatrixStore<Double> vecP = store.multiply(ve);
@@ -76,41 +78,17 @@ public class Bone implements IVectorSpace {
     }
 
     public void rotate(float angle, float x, float y, float z) {
-        this.fillArrayWithTransform(transform, transformAsArray);
         rotation.update(x, y, z);
         rotation.normalize();
         if (!Float.isNaN(rotation.x) && !Float.isNaN(rotation.y) && !Float.isNaN(rotation.z) && !Float.isInfinite(rotation.x) && !Float.isInfinite(rotation.y) && !Float.isInfinite(rotation.z)) {
             Matrix.rotateM(this.transformAsArray, 0, angle, x, y, z);
             Matrix.invertM(this.inverseTransformAsArray, 0, this.transformAsArray, 0);
-            // Matrix.rotateM(this.inverseTransformAsArray, 0, - angle, x, y, z);
-            /**this.transform = PrimitiveMatrix.FACTORY.columns(new double[]{this.transformAsArray[0], this.transformAsArray[1], this.transformAsArray[2], this.transformAsArray[3]},
-                    new double[]{this.transformAsArray[4], this.transformAsArray[5], this.transformAsArray[6], this.transformAsArray[7]},
-                    new double[]{this.transformAsArray[8], this.transformAsArray[9], this.transformAsArray[10], this.transformAsArray[11]},
-                    new double[]{this.transformAsArray[12], this.transformAsArray[13], this.transformAsArray[14], this.transformAsArray[15]});
-            this.inverseTransform = this.transform.invert();
-            /**  this.inverseTransform =  PrimitiveMatrix.FACTORY.columns(new double[] {this.inverseTransformAsArray[0], this.inverseTransformAsArray[1], this.inverseTransformAsArray[2], this.inverseTransformAsArray[3]},
-             new double[] {this.inverseTransformAsArray[4], this.inverseTransformAsArray[5], this.inverseTransformAsArray[6], this.inverseTransformAsArray[7]},
-             new double[] {this.inverseTransformAsArray[8], this.inverseTransformAsArray[9], this.inverseTransformAsArray[10], this.inverseTransformAsArray[11]},
-             new double[] {this.inverseTransformAsArray[12], this.inverseTransformAsArray[13], this.inverseTransformAsArray[14], this.inverseTransformAsArray[15]});
-             */
         }
     }
 
     public void scale(float x, float y, float z) {
-        this.fillArrayWithTransform(transform, transformAsArray);
         Matrix.scaleM(this.transformAsArray, 0, x, y, z);
         Matrix.invertM(this.inverseTransformAsArray, 0, this.transformAsArray, 0);
-        // Matrix.rotateM(this.inverseTransformAsArray, 0, - angle, x, y, z);
-        /**this.transform =  PrimitiveMatrix.FACTORY.columns(new double[] {this.transformAsArray[0], this.transformAsArray[1], this.transformAsArray[2], this.transformAsArray[3]},
-                new double[] {this.transformAsArray[4], this.transformAsArray[5], this.transformAsArray[6], this.transformAsArray[7]},
-                new double[] {this.transformAsArray[8], this.transformAsArray[9], this.transformAsArray[10], this.transformAsArray[11]},
-                new double[] {this.transformAsArray[12], this.transformAsArray[13], this.transformAsArray[14], this.transformAsArray[15]});
-        this.inverseTransform = this.transform.invert();
-        /**  this.inverseTransform =  PrimitiveMatrix.FACTORY.columns(new double[] {this.inverseTransformAsArray[0], this.inverseTransformAsArray[1], this.inverseTransformAsArray[2], this.inverseTransformAsArray[3]},
-         new double[] {this.inverseTransformAsArray[4], this.inverseTransformAsArray[5], this.inverseTransformAsArray[6], this.inverseTransformAsArray[7]},
-         new double[] {this.inverseTransformAsArray[8], this.inverseTransformAsArray[9], this.inverseTransformAsArray[10], this.inverseTransformAsArray[11]},
-         new double[] {this.inverseTransformAsArray[12], this.inverseTransformAsArray[13], this.inverseTransformAsArray[14], this.inverseTransformAsArray[15]});
-         */
     }
 
     @Contract(pure = true)

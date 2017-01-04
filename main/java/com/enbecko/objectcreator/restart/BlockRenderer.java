@@ -5,7 +5,6 @@ import com.enbecko.objectcreator.core.vec3Int;
 import net.minecraft.client.model.TexturedQuad;
 import net.minecraft.client.renderer.Tessellator;
 import org.lwjgl.opengl.GL11;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 /**
  * Created by Niclas on 19.11.2016.

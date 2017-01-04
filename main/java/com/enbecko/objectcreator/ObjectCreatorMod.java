@@ -15,6 +15,9 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.ojalgo.array.Array1D;
+import org.ojalgo.array.BasicArray;
+import org.ojalgo.array.PrimitiveArray;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 @Mod(modid = ObjectCreatorMod.MODID, version = ObjectCreatorMod.VERSION)
@@ -63,7 +66,7 @@ public class ObjectCreatorMod
         Face3D face3D = new Face3D(onPointE, e1, e2, false);
         RayTrace3D rayTrace3D = new RayTrace3D(onPointL, l1, true);
         BasicLogger.debug(face3D.checkIfCrosses(rayTrace3D));*/
-       Bone bone = new Bone(200);
+       Bone bone = new Bone(200, PrimitiveArray.wrap(new double[]{2, 1, 5, 1}));
         bone.scale(2, 1, 1);
         bone.getRayTraceResult(100, new RayTrace3D(PrimitiveDenseStore.FACTORY.makeEye(4, 1), PrimitiveDenseStore.FACTORY.makeEye(4, 1), true));
     }

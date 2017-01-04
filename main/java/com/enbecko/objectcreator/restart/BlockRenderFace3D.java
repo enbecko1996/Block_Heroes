@@ -6,10 +6,6 @@ import com.enbecko.objectcreator.core.vec3;
 import com.enbecko.objectcreator.core.vec3Int;
 import net.minecraft.client.model.PositionTextureVertex;
 import net.minecraft.client.model.TexturedQuad;
-import org.ojalgo.matrix.decomposition.LU;
-import org.ojalgo.matrix.store.MatrixStore;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
-import org.ojalgo.netio.BasicLogger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
